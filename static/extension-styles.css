@@ -1,0 +1,48 @@
+.vscode-extension {
+  padding: 40px 20px;
+  background-color: transparent; /* Dark background */
+  color: #ffffff; /* Light text color */
+  text-align: center;
+  width: 100%;
+}
+
+.vscode-extension h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.vscode-extension p {
+  margin-bottom: 30px;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d3d3d3; /* Lighter grey color for text */
+}
+
+.gif-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: -1;
+  left: 50%;
+  position: absolute;
+  width: 50%;
+}
+.gif-container img {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+}
+
+.vscode-extension-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1em;
+}
+.vscode-extension-header img {
+  background-color: black;
+  width: 3em;
+  height: 3em;
+  border: 2px solid black;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  border-radius: 0.5em;
+}

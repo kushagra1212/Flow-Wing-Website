@@ -1,0 +1,89 @@
+bring "Vortex-module.fg"
+bring File
+bring Err
+bring Json
+bring Map
+
+fun wrapWithHeader(pageHtml: str) -> str {
+  const headerHtml: str , headerLoadErr: Err::Result = File::read("pages/components/header.html", "r")
+  const footerHtml: str , footerLoadErr: Err::Result = File::read("pages/components/footer.html", "r")
+  const headHtml: str , headLoadErr: Err::Result = File::read("pages/components/head.html", "r")
+
+  return `
+    <html>
+      `+headHtml+`
+      <body>
+        `+headerHtml+`
+        `+pageHtml+`
+        `+footerHtml+`
+      </body>
+    </html>
+  `
+}
+
+fun handleHomePage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  const homePage: str, homePageLoadErr: Err::Result = File::read("pages/homePage.html", "r")    
+  /; Handle GET request for the home page
+
+  if (homePageLoadErr != Nir) {
+    print(homePageLoadErr.getMessage(), "\n")
+    res.send({
+      status: 500,
+      content_type: "text/html",
+      body: `
+      <html>
+        <body>
+          <h1>Error Loading Home Page</h1>
+        </body>
+      </html>
+      `
+    })
+    return :
+  }
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/html",
+    body: wrapWithHeader(homePage)
+  })
+  if err != Nir {
+    print("Error sending response: ", err.getMessage(), "\n")
+  }
+}
+
+
+fun handleGet(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "application/json",
+    body: `{
+      "message": "Welcome to the Flow-Wing Programming Language!"
+    }`
+  })
+  if err != Nir {
+    print("Error sending response: ", err.getMessage(), "\n")
+  }
+}
+
+
+fun handlePost(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  const body: Map::String = Json::parseObject(req.body)
+  var name: str = body.get("name")
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "application/json",
+    body: `
+       {
+         "message": "Welcome to the Flow-Wing Programming Language!",
+         "body": ` + body.get("name") + `
+       }
+       `
+  })
+}
+
+const port: int = 8080
+print("Flow-Wing server starting on port: ", port, "\n")
+var server: Vortex::Server = new Vortex::Server(port)
+server.setRoute("GET", "/", handleHomePage)
+server.setRoute("GET", "/api/welcome", handleGet)
+server.setRoute("POST", "/", handlePost)
+server.start()

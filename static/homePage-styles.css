@@ -1,0 +1,123 @@
+.home-page {
+  text-align: center;
+  padding-bottom: 2em;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  color: white;
+  padding: 50px 20px;
+}
+
+.hero h2 {
+  font-size: 3rem;
+}
+
+.hero p {
+  font-size: 1.5rem;
+  margin-top: 10px;
+}
+
+.get-started-link-button {
+  display: inline-block;
+  background-color: rgb(39, 107, 40); /* Light blue button */
+  color: white; /* Dark text */
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  font-weight: 900;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.get-started-link-button:hover {
+  background-color: rgb(74, 200, 76); /* Darker blue on hover */
+}
+
+.about {
+  padding: 40px 20px;
+  text-align: center;
+  background: transparent; /* Dark gradient background */
+  color: #ffffff; /* Light text color */
+  width: 50%;
+}
+
+.about h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffffff; /* Vercel-like color for heading */
+}
+
+.about p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d3d3d3; /* Lighter grey color for text */
+  max-width: 800px; /* Limit width for readability */
+  margin: 0 auto; /* Center the paragraph */
+  text-align: justify;
+}
+
+.features {
+  padding: 40px 20px;
+  text-align: center;
+  background-color: transparent; /* Dark background for the features section */
+  color: #ffffff; /* Light text color */
+}
+
+.features h2 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #ffffff; /* Light color for heading */
+}
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px; /* Space between cards */
+}
+
+.card {
+  background: linear-gradient(
+    135deg,
+    #2c2c2c7e,
+    #3e3e3e8b
+  ); /* Gradient background for cards */
+  border-radius: 12px; /* Slightly more rounded corners */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Slightly stronger shadow for depth */
+  padding: 20px;
+  width: 250px; /* Fixed width for cards */
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s; /* Smooth transform, shadow, and background change on hover */
+  overflow: hidden; /* Ensure content doesn't overflow */
+}
+
+.card:hover {
+  transform: translateY(-8px); /* Slightly raise the card on hover */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Deeper shadow on hover */
+  background: linear-gradient(
+    135deg,
+    #3c3c3c83,
+    #2062e6ba
+  ); /* Darker gradient on hover */
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #ffffff; /* Light color for headings */
+  transition: color 0.3s; /* Smooth transition for text color */
+}
+
+.card p {
+  color: #d3d3d3; /* Lighter grey color for text */
+  transition: color 0.3s; /* Smooth transition for text color */
+}
+
+/* Optional: Change text color on hover */
+.card:hover h3,
+.card:hover p {
+  color: #ffffff; /* Keep text color white on hover */
+}

@@ -1,0 +1,102 @@
+header {
+  background-color: rgba(40, 44, 52, 0.3); /* Semi-transparent background */
+  color: #fff;
+  padding: 0.5em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Ensures responsiveness */
+  backdrop-filter: blur(10px); /* Adjust blur radius as needed */
+  position: sticky; /* Enables sticky positioning */
+  top: 0; /* Sticks to the top of the viewport */
+  z-index: 1000; /* Ensures it stays above other content */
+}
+
+/* Logo styling */
+.logo {
+  margin-right: 20px;
+}
+
+.logo img {
+  height: 100px;
+  width: 100px;
+}
+
+/* Title styling */
+header h1 {
+  font-size: 2.5rem; /* Increased font size for better visibility */
+  margin-left: 20px;
+  flex: 1;
+  font-family: "Arial", sans-serif; /* Use a clean, modern font */
+  letter-spacing: 1px; /* Add some letter spacing for a more spacious look */
+}
+
+/* Navigation styling */
+nav ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  margin-left: 30px; /* Increased margin for a more spacious feel */
+  transition: transform 0.3s; /* Add a transition effect */
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px; /* Add padding for clickable area */
+  border-radius: 4px; /* Rounded corners for links */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+}
+
+/* Hover effects */
+nav li:hover {
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+nav a:hover {
+  background-color: rgba(97, 218, 251, 0.2); /* Light background on hover */
+  color: #ffffff; /* Change text color on hover */
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column; /* Stack the elements vertically */
+    text-align: center;
+  }
+
+  .logo {
+    margin-bottom: 10px;
+  }
+
+  nav ul {
+    flex-direction: column;
+  }
+
+  nav li {
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+
+  header h1 {
+    margin: 10px 0;
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo img {
+    height: 60px;
+    width: 60px;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+}

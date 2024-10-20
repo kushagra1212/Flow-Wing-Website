@@ -1,0 +1,27 @@
+.get-started {
+  background: transparent; /* Gradient background */
+  color: #ffffff; /* Light text color */
+  padding: 40px 20px; /* Padding for spacing */
+  text-align: center; /* Center text */
+  border-radius: 10px; /* Rounded corners */
+  margin: 20px; /* Margin around the section */
+}
+
+.get-started h2 {
+  font-size: 2rem; /* Heading size */
+  margin-bottom: 20px; /* Space below heading */
+}
+
+.get-started p {
+  font-size: 1.1rem; /* Paragraph size */
+}
+
+.get-started a {
+  color: #61dafb; /* Link color */
+  text-decoration: underline; /* Underline link */
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+.get-started a:hover {
+  color: #21a1f1; /* Change link color on hover */
+}

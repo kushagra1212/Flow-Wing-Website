@@ -1,0 +1,19 @@
+footer {
+  background: transparent; /* Gradient background */
+  color: white;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  bottom: 0;
+  height: 10;
+  width: 100%;
+  padding: 1em;
+  transition: background 0.3s; /* Smooth background transition */
+  display: flex;
+}
+
+footer p {
+  margin: 0;
+  font-size: 1rem; /* Adjust font size */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Subtle text shadow */
+}

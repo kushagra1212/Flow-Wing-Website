@@ -1,0 +1,78 @@
+.download {
+  padding: 40px 20px;
+  background-color: "rgba(0, 0, 0, 0.5)"; /* Dark background */
+  color: #ffffff; /* Light text color */
+  text-align: center;
+  backdrop-filter: blur(10px);
+  width: 50%;
+}
+
+.download h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.download p {
+  margin-bottom: 30px;
+  font-size: 1.2rem;
+}
+
+.download-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px; /* Space between cards */
+}
+
+.download-card {
+  background: linear-gradient(
+    135deg,
+    #2c2c2c7e,
+    #3e3e3e8b
+  ); /* Dark gradient background */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+  padding: 20px;
+  width: 250px; /* Fixed width for cards */
+  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
+
+.download-card:hover {
+  transform: translateY(-5px); /* Slightly raise the card on hover */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Deeper shadow on hover */
+}
+
+.download-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #ffffff; /* Light color for headings */
+}
+
+.download-card p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d3d3d3; /* Lighter grey color for text */
+}
+
+.download-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.download-card li {
+  margin: 10px 0;
+}
+
+.download-button {
+  display: inline-block;
+  background-color: #004382; /* Light blue button */
+  color: #ffff; /* Dark text */
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s; /* Smooth background change on hover */
+}
+
+.download-button:hover {
+  background-color: #36628b; /* Darker blue on hover */
+}
