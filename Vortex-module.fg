@@ -20,7 +20,7 @@ fun send_response(client_socket: as int, status: as str, content_type: as str, b
 fun send(socket: as int, data: as str, len: as int, flags: as int) -> as nthg decl
 
 
-fun regex_replace(source: as str, pattern: as str, replacement: as str) -> as str decl
+fun replace_all(source: as str, pattern: as str, replacement: as str) -> as str decl
 
 
 fun split(s: str, delimiter: str) -> Vec::String {
@@ -55,7 +55,7 @@ fun renderTemplate(inout template: str, inout variables: Vec::String) -> str {
     const values: Vec::String = split(variables.get(i), Vortex::DELIMITER)
     const key: str = "{{" + values.get(0) + "}}"
     const value: str = values.get(1)
-    template = Vortex::replaceRegex(template, key, value) 
+    template = replace_all(template, key, value) 
   }
   return template
 }
@@ -147,9 +147,6 @@ fun statusString(status: int) -> str {
 }
 
 
-fun replaceRegex(source: as str, pattern: as str, replacement: as str) -> as str {
-  return regex_replace(source, pattern, replacement)
-}
 
 
 class HttpResponse {

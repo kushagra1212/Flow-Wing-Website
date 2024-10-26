@@ -65,28 +65,32 @@ fun handleDownloadPage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> n
     res.send(errorObject)
     return :
   }
-  if (Str::subStrIndex(req.endpoint, "/mac-arm64") != -1) {
-    const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/download-arm64.html", "r")
-    if (downloadSectionLoadErr != Nir) {
-      print(downloadSectionLoadErr.getMessage(), "\n")
-      res.send(errorObject)
-      return :
-    }
-    var err: Err::Result = res.send({
-      status: 200,
-      content_type: "text/html",
-      body: wrap(downloadSection)
-    })
+  var downloadSection: str, downloadSectionLoadErr: Err::Result
+  if Str::subStrIndex(req.endpoint, "/mac-arm64") != -1 {
+    downloadSection, downloadSectionLoadErr = File::read("pages/download-arm64.html", "r") 
+  } or if Str::subStrIndex(req.endpoint, "/linux-x86_64") != -1 {
+    downloadSection, downloadSectionLoadErr = File::read("pages/download-linux-x86_64.html", "r") 
   } else {
     var err: Err::Result = res.send({
       status: 200,
       content_type: "text/html",
       body: wrap(`<center>` + allDownloads + `</center>`)
     })
+    return :
   }
+  if (downloadSectionLoadErr != Nir) {
+    print(downloadSectionLoadErr.getMessage(), "\n")
+    res.send(errorObject)
+    return :
+  }
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/html",
+    body: wrap(downloadSection)
+  })
 }
 
-const port: int = 8080
+const port: int = 3002
 print("Flow-Wing server starting on port: ", port, "\n")
 var server: Vortex::Server = new Vortex::Server(port)
 server.setRoute("GET", "/", handleHomePage)
