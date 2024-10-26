@@ -1,0 +1,68 @@
+.download-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.download-page .download {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  padding: 30px;
+  text-align: center;
+}
+h2 {
+  color: #ffffff;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+.instructions {
+  margin-top: 15px;
+  text-align: left;
+  color: #dddddd;
+  line-height: 1.6;
+}
+.code-block {
+  background-color: #aaaaaa;
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px 0;
+  overflow: auto;
+}
+.code-block span {
+  display: block;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000000;
+}
+.btn-primary {
+  background-color: #004382; /* Light blue button */
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+.footer {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #888;
+}
+.footer a {
+  color: #3498db;
+  text-decoration: none;
+}
+.footer a:hover {
+  text-decoration: underline;
+}

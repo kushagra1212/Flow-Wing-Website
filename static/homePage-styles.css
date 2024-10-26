@@ -121,3 +121,33 @@
 .card:hover p {
   color: #ffffff; /* Keep text color white on hover */
 }
+.repl-gif-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 0em;
+  position: relative;
+  width: 30%;
+  left: 10%;
+}
+.repl-gif-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px; /* Slightly more rounded corners */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Slightly stronger shadow for depth */ /* Slightly stronger shadow for depth */
+}
+
+.repl-gif-overlay {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: 1em;
+  text-align: center;
+  border-radius: 1em; /* Slightly more rounded corners */
+  background-color: rgba(1, 76, 130, 0.7); /* Semi-transparent background */
+  backdrop-filter: blur(2em); /* Adjust blur radius as needed */
+}
+.repl-gif-overlay h2 {
+  font-size: 2rem;
+  color: #dddddd; /* Light color for heading */
+}

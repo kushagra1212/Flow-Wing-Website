@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <regex.h>
 #define MAX_REQUEST_SIZE 10240
 
 typedef void (*CustomRequestHandler)(const char *request,
@@ -174,7 +175,6 @@ char *read_file(const char *path, size_t *out_length) {
 }
 
 
-
 void handle_request(int client_socket, const char *request) {
   char method[16];
   char endpoint[256];
@@ -187,11 +187,27 @@ void handle_request(int client_socket, const char *request) {
 
   Route *current = routes;
   while (current) {
-    if (strcmp(current->method, method) == 0 &&
-        strcmp(current->path, endpoint) == 0) {
+    int8_t isValidMethod =  strcmp(current->method, method) == 0;
+    if (isValidMethod &&
+    strcmp(current->path, endpoint) == 0) {
       current->handler(client_socket, request, endpoint, current->custom_handler);
       return;
     }
+
+   // Check for wildcard match, like "/downloads/*"
+    const char *wildcard_pos = strstr(current->path, "/*");
+    if (wildcard_pos != NULL) {
+        // Calculate the prefix length up to the "/*"
+        size_t prefix_length = wildcard_pos - current->path;
+        
+        // Check if the endpoint matches the prefix and has a valid sub-path
+        if (isValidMethod &&  strncmp(endpoint, current->path, prefix_length) == 0 &&
+            (endpoint[prefix_length] == '/' || endpoint[prefix_length] == '\0')) {
+            current->handler(client_socket, request, endpoint, current->custom_handler);
+            return;
+        }
+    }
+
     current = current->next;
   }
 
@@ -314,3 +330,57 @@ void start_server(int port) {
   close(server_fd);
 }
 void flush() { fflush(stdout); }
+
+#include <regex.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+char *regex_replace(const char *source, const char *pattern, const char *replacement) {
+    regex_t regex;
+    if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
+        perror("Could not compile regex");
+        return NULL;
+    }
+
+    // Allocate an initial buffer for the result
+    size_t result_capacity = strlen(source) + 1; // Start with enough space
+    char *result = malloc(result_capacity);
+    if (result == NULL) {
+        perror("Failed to allocate memory for result");
+        regfree(&regex);
+        return NULL;
+    }
+    result[0] = '\0'; // Initialize result string to be empty
+
+    // Pointer to the current position in the source string
+    const char *cursor = source;
+    size_t match_size = 10;
+    regmatch_t matches[match_size];
+
+    while (regexec(&regex, cursor, match_size, matches, 0) == 0) {
+        // Append the part before the match to the result
+        strncat(result, cursor, matches[0].rm_so); // Part before match
+        strcat(result, replacement); // Append replacement
+        
+        // Move the cursor past the match
+        cursor += matches[0].rm_eo;
+
+        // Resize result if needed
+        if (strlen(result) + strlen(cursor) >= result_capacity) {
+            result_capacity += strlen(cursor) + 1; // Additional space needed
+            result = realloc(result, result_capacity);
+            if (result == NULL) {
+                perror("Failed to reallocate memory for result");
+                regfree(&regex);
+                return NULL;
+            }
+        }
+    }
+
+    // Append the remaining part of the source string
+    strcat(result, cursor);
+
+    regfree(&regex);
+    return result;
+}
