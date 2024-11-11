@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <regex.h>
+
 #define MAX_REQUEST_SIZE 10240
 
 typedef void (*CustomRequestHandler)(const char *request,
@@ -331,56 +331,52 @@ void start_server(int port) {
 }
 void flush() { fflush(stdout); }
 
-#include <regex.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
-char *regex_replace(const char *source, const char *pattern, const char *replacement) {
-    regex_t regex;
-    if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
-        perror("Could not compile regex");
-        return NULL;
-    }
 
-    // Allocate an initial buffer for the result
+
+char *replace_all(const char *source, const char *search, const char *replacement) {
+    size_t search_len = strlen(search);
+    size_t replacement_len = strlen(replacement);
+    
+    // Calculate the initial buffer size for the result
     size_t result_capacity = strlen(source) + 1; // Start with enough space
     char *result = malloc(result_capacity);
     if (result == NULL) {
         perror("Failed to allocate memory for result");
-        regfree(&regex);
         return NULL;
     }
-    result[0] = '\0'; // Initialize result string to be empty
+    
+    const char *pos = source; // Pointer to current position in the source string
+    char *current_pos = result; // Pointer to the current position in the result string
 
-    // Pointer to the current position in the source string
-    const char *cursor = source;
-    size_t match_size = 10;
-    regmatch_t matches[match_size];
-
-    while (regexec(&regex, cursor, match_size, matches, 0) == 0) {
-        // Append the part before the match to the result
-        strncat(result, cursor, matches[0].rm_so); // Part before match
-        strcat(result, replacement); // Append replacement
-        
-        // Move the cursor past the match
-        cursor += matches[0].rm_eo;
-
-        // Resize result if needed
-        if (strlen(result) + strlen(cursor) >= result_capacity) {
-            result_capacity += strlen(cursor) + 1; // Additional space needed
+    while ((pos = strstr(pos, search)) != NULL) {
+        // Copy the part before the match
+        size_t bytes_to_copy = pos - source;
+        while (result_capacity <= (current_pos - result) + bytes_to_copy + replacement_len + 1) {
+            // Resize result if needed
+            result_capacity *= 2; // Double the size
             result = realloc(result, result_capacity);
             if (result == NULL) {
                 perror("Failed to reallocate memory for result");
-                regfree(&regex);
                 return NULL;
             }
+            current_pos = result + (current_pos - result); // Adjust current_pos to the new memory location
         }
+        strncpy(current_pos, source, bytes_to_copy);
+        current_pos += bytes_to_copy;
+
+        // Copy the replacement string
+        strcpy(current_pos, replacement);
+        current_pos += replacement_len;
+
+        // Move past the match in the source string
+        pos += search_len; // Move past the current match
+        source = pos; // Update source to continue searching
     }
 
-    // Append the remaining part of the source string
-    strcat(result, cursor);
+    // Copy any remaining part of the source string
+    strcpy(current_pos, source);
 
-    regfree(&regex);
     return result;
 }
+
