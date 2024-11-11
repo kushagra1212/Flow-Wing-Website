@@ -42,36 +42,35 @@ void set_middleware(RequestHandler mw, CustomRequestHandler mwCustom) { middlewa
 
 
 
-char* send_response(int client_socket, const char *status, const char *content_type, const char *body, int keep_alive, size_t _content_length ) {
+char* send_response(int client_socket, const char *status, const char *content_type, const char *body, int keep_alive, size_t _content_length) {
     if (!status || !content_type) {
         perror("Invalid status or content_type provided");
         return "Error: Invalid status or content_type provided";
     }
 
-    // Determine body length, handle null or empty body
-    size_t body_length =_content_length ? _content_length: ((body != NULL) ? strlen(body) : 0);
-
-    // Estimate size for the full response, including headers
-    size_t response_size = 512 + body_length; // A rough estimate for the headers + body
-    char *response = (char *)malloc(response_size);
-    if (!response) {
-        perror("malloc");
-        return "Error: Memory allocation failed";
-    }
+    // Set the connection type: Keep-Alive or close
+    const char *connection_type = keep_alive ? "Keep-Alive" : "close";
+    const char *keep_alive_header = keep_alive ? "Keep-Alive: timeout=5, max=100\r\n" : "";
 
     // Get current time for the Date header
     char date_header[128];
     time_t now = time(NULL);
     struct tm *tm_info = gmtime(&now);
     if (!strftime(date_header, sizeof(date_header), "%a, %d %b %Y %H:%M:%S GMT", tm_info)) {
-        free(response);
         perror("strftime");
         return "Error: Failed to format the date";
     }
 
-    // Set the connection type: Keep-Alive or close
-    const char *connection_type = keep_alive ? "Keep-Alive" : "close";
-    const char *keep_alive_header = keep_alive ? "Keep-Alive: timeout=5, max=100\r\n" : "";
+    // Determine body length, handle null or empty body
+    size_t body_length = _content_length ? _content_length : ((body != NULL) ? strlen(body) : 0);
+
+    // Estimate size for the full response, including headers
+    size_t response_size = 512 + body_length + strlen(content_type) + strlen(keep_alive_header) + strlen(date_header);// A rough estimate for the headers + body
+    char *response = (char *)malloc(response_size);
+    if (!response) {
+        perror("malloc");
+        return "Error: Memory allocation failed";
+    }
 
     // Create the full HTTP response with headers
     int header_length = snprintf(response, response_size,
@@ -109,15 +108,17 @@ char* send_response(int client_socket, const char *status, const char *content_t
 
     // Total response length (headers + body)
     size_t total_response_length = header_length + body_length;
-
+    
+    // printf("Total response length: %zu\n", total_response_length);
+    // printf("RESPONSE SIZE: %zu\n", response_size);
     // Send the response
-    ssize_t bytes_sent = send(client_socket, response, total_response_length, 0);
+    ssize_t bytes_sent = send(client_socket, response, response_size, 0);
     if (bytes_sent == -1) {
         free(response);
-     // Close the socket unless it's a Keep-Alive connection
-    if (!keep_alive) {
-        close(client_socket);
-    }
+        // Close the socket unless it's a Keep-Alive connection
+        if (!keep_alive) {
+            close(client_socket);
+        }
         perror("After send");
         return "Error: Failed to send response";
     }
@@ -133,7 +134,6 @@ char* send_response(int client_socket, const char *status, const char *content_t
     // No errors, return NULL
     return NULL;
 }
-
 void parse_http_request(const char *request, char *method, char *endpoint) {
   sscanf(request, "%s %s", method, endpoint);
 }

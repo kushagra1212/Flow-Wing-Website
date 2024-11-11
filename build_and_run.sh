@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define paths and variables
-export FLOW_WING_COMPILER_PATH="/Users/apple/code/per/Flow-Wing/targets/aot-compiler/aot-compiler-build/FlowWing"
+export FLOW_WING_COMPILER_PATH="FlowWing"
 export FLOW_WING_LIB_PATH="/Users/apple/code/per/Flow-Wing-Website"
 export FLOW_WING_FILE="server.fg"
 export SHARED_LIB_PATH="libflowwing_vortex.a"

@@ -144,7 +144,7 @@
   padding: 1em;
   text-align: center;
   border-radius: 1em; /* Slightly more rounded corners */
-  background-color: rgba(1, 76, 130, 0.7); /* Semi-transparent background */
+  background-color: rgba(0, 29, 49, 0.7); /* Semi-transparent background */
   backdrop-filter: blur(2em); /* Adjust blur radius as needed */
 }
 .repl-gif-overlay h2 {

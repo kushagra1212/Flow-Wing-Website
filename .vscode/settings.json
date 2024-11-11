@@ -1,5 +1,5 @@
 {
   "FlowWing": {
-    "compilerPath": "/Users/apple/code/per/Flow-Wing/targets/aot-compiler/aot-compiler-build/FlowWing"
+    "compilerPath": "/opt/homebrew/bin/flowwing"
   }
 }

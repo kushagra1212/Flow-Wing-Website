@@ -77,6 +77,30 @@ fun handleDownloadPage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> n
       content_type: "text/html",
       body: wrap(downloadSection)
     })
+  } or if (Str::subStrIndex(req.endpoint, "/windows-x86_64") != -1) {
+    const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/download-windows-x86_64.html", "r")
+    if (downloadSectionLoadErr != Nir) {
+      print(downloadSectionLoadErr.getMessage(), "\n")
+      res.send(errorObject)
+      return :
+    }
+    var err: Err::Result = res.send({
+      status: 200,
+      content_type: "text/html",
+      body: wrap(downloadSection)
+    })
+  } or if (Str::subStrIndex(req.endpoint, "/linux-x86_64") != -1) {
+    const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/download-linux-x86_64.html", "r")
+    if (downloadSectionLoadErr != Nir) {
+      print(downloadSectionLoadErr.getMessage(), "\n")
+      res.send(errorObject)
+      return :
+    }
+    var err: Err::Result = res.send({
+      status: 200,
+      content_type: "text/html",
+      body: wrap(downloadSection)
+    })
   } else {
     var err: Err::Result = res.send({
       status: 200,
