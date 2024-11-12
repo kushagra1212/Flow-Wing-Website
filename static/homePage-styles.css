@@ -151,3 +151,12 @@
   font-size: 2rem;
   color: #dddddd; /* Light color for heading */
 }
+@media (max-width: 480px) {
+  .about {
+    width: 100%;
+  }
+  .repl-gif-container {
+    width: 100%;
+    left: 0%;
+  }
+}
