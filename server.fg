@@ -5,10 +5,6 @@ bring Json
 bring Map
 bring Vec
 bring Str
-
-
-
-
 var errorObject: Vortex::HttpResponseType = {
   content_type: "text/html",
   body: `
@@ -21,12 +17,10 @@ var errorObject: Vortex::HttpResponseType = {
   status: 500
 }
 
-
-
 fun wrap(pageHtml: str) -> str {
- const headerHtml: str, headerLoadErr: Err::Result = File::read("pages/components/header.html", "r")
-const footerHtml: str, footerLoadErr: Err::Result = File::read("pages/components/footer.html", "r")
-const headHtml: str, headLoadErr: Err::Result = File::read("pages/components/head.html", "r") 
+  const headerHtml: str, headerLoadErr: Err::Result = File::read("pages/components/header.html", "r")
+  const footerHtml: str, footerLoadErr: Err::Result = File::read("pages/components/footer.html", "r")
+  const headHtml: str, headLoadErr: Err::Result = File::read("pages/components/head.html", "r")
   return `
     <html>
       ` + headHtml + `
@@ -41,18 +35,16 @@ const headHtml: str, headLoadErr: Err::Result = File::read("pages/components/hea
 
 
 fun handleHomePage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
-
-const homePage: str, homePageLoadErr: Err::Result = File::read("pages/homePage.html", "r")
+  const homePage: str, homePageLoadErr: Err::Result = File::read("pages/homePage.html", "r")
   /; Handle GET request for the home page
 
-
-const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/components/downloadSection.html", "r")
- var variables: Vec::String = new Vec::String()
- variables.add("download-section" + Vortex::DELIMITER + downloadSection)
+  const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/components/downloadSection.html", "r")
+  var variables: Vec::String = new Vec::String()
+  variables.add("download-section" + Vortex::DELIMITER + downloadSection)
   var err: Err::Result = res.send({
     status: 200,
     content_type: "text/html",
-    body: Vortex::renderTemplate(wrap(homePage),variables)
+    body: Vortex::renderTemplate(wrap(homePage), variables)
   })
   variables.free()
   if err != Nir {
@@ -62,24 +54,18 @@ const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pa
 
 
 fun handleDownloadPage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
-  
-
-const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/components/downloadSection.html", "r")
-
-var downloadSectionSpec: str
+  const downloadSection: str, downloadSectionLoadErr: Err::Result = File::read("pages/components/downloadSection.html", "r")
+  var downloadSectionSpec: str
   if Str::subStrIndex(req.endpoint, "/mac-arm64") != -1 {
-
-const  downloadArm64: str , downloadArm64Err: Err::Result = File::read("pages/download-arm64.html", "r") 
-	downloadSectionSpec = downloadArm64
+    const downloadArm64: str, downloadArm64Err: Err::Result = File::read("pages/download-arm64.html", "r")
+    downloadSectionSpec = downloadArm64 
   } or if Str::subStrIndex(req.endpoint, "/windows-x86_64") != -1 {
-
-const  downloadWin86_64: str, downloadWin86_64Err: Err::Result  = File::read("pages/download-windows-x86_64.html", "r") 
-	downloadSectionSpec = downloadWin86_64
+    const downloadWin86_64: str, downloadWin86_64Err: Err::Result = File::read("pages/download-windows-x86_64.html", "r")
+    downloadSectionSpec = downloadWin86_64 
   } or if Str::subStrIndex(req.endpoint, "/linux-x86_64") != -1 {
-
-const  downloadLinux86_64: str, downloadLinux86_64Err: Err::Result = File::read("pages/download-linux-x86_64.html", "r") 
-	downloadSectionSpec = downloadLinux86_64
-   } else {
+    const downloadLinux86_64: str, downloadLinux86_64Err: Err::Result = File::read("pages/download-linux-x86_64.html", "r")
+    downloadSectionSpec = downloadLinux86_64 
+  } else {
     var err: Err::Result = res.send({
       status: 200,
       content_type: "text/html",
@@ -87,8 +73,7 @@ const  downloadLinux86_64: str, downloadLinux86_64Err: Err::Result = File::read(
     })
     return :
   }
-  
-var err: Err::Result = res.send({
+  var err: Err::Result = res.send({
     status: 200,
     content_type: "text/html",
     body: wrap(downloadSectionSpec)
