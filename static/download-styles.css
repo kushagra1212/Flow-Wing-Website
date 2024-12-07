@@ -76,3 +76,8 @@
 .download-button:hover {
   background-color: #36628b; /* Darker blue on hover */
 }
+@media (max-width: 480px) {
+  .download {
+    width: 100%;
+  }
+}
