@@ -22,11 +22,11 @@ h2 {
 .instructions {
   margin-top: 15px;
   text-align: left;
-  color: #dddddd;
+  color: #ffffff;
   line-height: 1.6;
 }
 .code-block {
-  background-color: #aaaaaa;
+  background-color: #ffffff;
   font-family: monospace;
   font-size: 1rem;
   padding: 15px;
