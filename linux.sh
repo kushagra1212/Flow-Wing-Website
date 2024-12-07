@@ -2,8 +2,8 @@
 
 # Define paths and variables
 
-export FLOW_WING_COMPILER_PATH="/home/kushagra/code/Flow-Wing/targets/aot-compiler/aot-compiler-build/FlowWing"
-export FLOW_WING_LIB_PATH="~/code/Flow-Wing-Website"
+export FLOW_WING_COMPILER_PATH="FlowWing"
+export FLOW_WING_LIB_PATH="~/Flow-Wing-Website"
 export FLOW_WING_FILE="server.fg"
 export SHARED_LIB_PATH="libflowwing_vortex.a"
 export OUTPUT_EXECUTABLE="build/bin/server"
