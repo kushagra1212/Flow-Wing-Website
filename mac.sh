@@ -9,7 +9,7 @@ export OUTPUT_EXECUTABLE="build/bin/server"
 
 # Compile the C code into a shared library
 echo "Compiling C code into shared library..."
-clang -fPIC -o $SHARED_LIB_PATH -c server.c
+clang -fPIC -o $SHARED_LIB_PATH -c mac-server.c
 
 # Check for errors in the C compilation step
 if [ $? -ne 0 ]; then
