@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
+#include <regex.h>
 #define MAX_REQUEST_SIZE 10240
 
 typedef void (*CustomRequestHandler)(const char *request,
@@ -331,14 +331,12 @@ void start_server(int port) {
 }
 void flush() { fflush(stdout); }
 
-
-
 #include <regex.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-char *replace_all(const char *source, const char *pattern, const char *replacement) {
+char *regex_replace(const char *source, const char *pattern, const char *replacement) {
     regex_t regex;
     if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
         perror("Could not compile regex");
@@ -386,7 +384,6 @@ char *replace_all(const char *source, const char *pattern, const char *replaceme
     regfree(&regex);
     return result;
 }
-
 
 
 #include <stdlib.h>
