@@ -32,7 +32,7 @@ fi
 
 # Compile the Flow-Wing code
 echo "Compiling Flow-Wing code..."
-export LD_LIBRARY_PATH=$OTHER_LIB_PATH:$LD_LIBRARY_PATH && $FLOW_WING_COMPILER_PATH --F=$FLOW_WING_FILE -O=-O3 -L=$FLOW_WING_LIB_PATH -l=flowwing_vortex 
+$FLOW_WING_COMPILER_PATH --F=$FLOW_WING_FILE -O=-O3 -L=$FLOW_WING_LIB_PATH -l=flowwing_vortex
 # Check if the executable was created successfully
 if [ ! -f "$OUTPUT_EXECUTABLE" ]; then
     echo "Error: Executable not created."
