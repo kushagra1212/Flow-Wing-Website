@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <regex.h>
+
 #define MAX_REQUEST_SIZE 10240
 
 typedef void (*CustomRequestHandler)(const char *request,
@@ -384,3 +385,83 @@ char *replace_all(const char *source, const char *pattern, const char *replaceme
     regfree(&regex);
     return result;
 }
+
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
+typedef struct {
+    char *output;  // Command output (if successful)
+    char *error;   // Error message (if failed)
+} CommandResult;
+
+void runCommand_internal(const char *command, CommandResult *result,int timeout) {
+    // Reset the result
+    if (result->output != NULL) {
+        free(result->output); // Free previous output before allocating new memory
+    }
+    result->output = NULL;
+    result->error = NULL;
+
+    // Use shell invocation to support redirection
+    char shellCommand[1024];
+    snprintf(shellCommand, sizeof(shellCommand), "sh -c \"%s 2>&1\"", command);
+
+    // Open a pipe to the command for reading
+    FILE *fp = popen(shellCommand, "r");
+    if (fp == NULL) {
+        result->error = "Failed to execute command";
+        return;
+    }
+
+    // Initialize dynamic buffer for command output
+    size_t buffer_size = 1024;
+    result->output = malloc(buffer_size);
+
+    if (result->output == NULL) {
+        pclose(fp);
+        result->error = "Memory allocation failed";
+        return;
+    }
+
+    size_t output_len = 0;
+    char buffer[256];  // Temporary buffer to hold data
+
+    // Track the start time
+    time_t start_time = time(NULL);
+    const int timeout_sec = timeout;
+
+    // Read the command output
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        size_t len = strlen(buffer);
+
+        // Resize the buffer if necessary
+        if (output_len + len >= buffer_size) {
+            buffer_size *= 2;
+            result->output = realloc(result->output, buffer_size);
+            if (result->output == NULL) {
+                pclose(fp);
+                result->error = "Failed to reallocate memory";
+                return;
+            }
+        }
+
+        // Append the new data to the output buffer
+        memcpy(result->output + output_len, buffer, len);
+        output_len += len;
+
+        // Check for timeout
+        if (timeout_sec != -1 && difftime(time(NULL), start_time) > timeout_sec) {
+            result->error = "Command execution timed out";
+            break;
+        }
+    }
+
+    // Null-terminate the string
+    result->output[output_len] = '\0';
+
+    // Close the pipe
+    pclose(fp);
+}
+

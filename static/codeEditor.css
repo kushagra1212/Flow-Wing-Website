@@ -1,0 +1,207 @@
+#playground_label {
+  background-color: #004dbf;
+  color: white;
+  font-size: 1.2rem;
+  padding: 1rem;
+  margin: 1rem;
+  position: relative;
+  display: block;
+  width: 50%;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+#code_editor_form {
+  display: grid;
+  grid-template-columns: 60vw 40vw;
+  grid-template-rows: 70vh;
+}
+@media screen and (max-width: 768px) {
+  #code_editor_form {
+    grid-template-columns: 100vw;
+    grid-template-rows: 70vh 50vh;
+  }
+}
+#code_editor_output_container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+#code_editor_output_container label {
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  background-color: grey;
+  color: white;
+}
+#code_editor_output {
+  flex: 1;
+  background-color: black;
+  width: 100%;
+  overflow: scroll;
+  color: white;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+#code_editor_submit_container {
+  display: flex;
+  padding: 1rem;
+}
+#code_editor_submit {
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+/* Default Button Style */
+button {
+  padding: 0.5rem 1rem; /* Combined shorthand for padding */
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px; /* Subtle rounded corners */
+  background-color: #005fee; /* Material Design purple */
+  color: white;
+  outline: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
+}
+
+/* Hover Effect */
+button:hover {
+  cursor: pointer;
+  background-color: #005fee95; /* Darker shade on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+/* Active (Click) Effect */
+button:active {
+  transform: scale(0.95); /* Slight shrink effect */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Return to smaller shadow */
+}
+
+/* Ripple Effect */
+button::before {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  width: 100px; /* Adjust to desired size of ripple */
+  height: 100px; /* Adjust to desired size of ripple */
+  background: rgba(255, 255, 255, 0.302); /* White translucent ripple */
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.6s, transform 0.6s;
+  pointer-events: none; /* Prevent interaction with ripple */
+  left: 50%; /* Start ripple from the center */
+  top: 50%;
+  transform-origin: center;
+  z-index: 1;
+}
+
+/* Active (Click) Ripple Effect */
+button:active::before {
+  opacity: 1;
+  transform: scale(4); /* Expands the ripple */
+  transition: opacity 0.6s, transform 0.6s;
+}
+
+/* Prevent ripple overflow for buttons inside containers */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+.ansi-black {
+  color: black;
+}
+.ansi-red {
+  color: red;
+}
+.ansi-green {
+  color: green;
+}
+.ansi-yellow {
+  color: yellow;
+}
+.ansi-blue {
+  color: blue;
+}
+.ansi-magenta {
+  color: magenta;
+}
+.ansi-cyan {
+  color: cyan;
+}
+.ansi-white {
+  color: white;
+}
+.ansi-reset {
+  color: inherit;
+}
+
+/* Scrollbars */
+#code_editor_output::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+#code_editor_output::-webkit-scrollbar-track,
+code-bedder pre::-webkit-scrollbar-thumb,
+code-bedder pre::-webkit-scrollbar-thumb:hover {
+  background-color: transparent;
+}
+
+#code_editor_output::-webkit-scrollbar {
+  width: 8px; /* Adjust the width of the scrollbar */
+  height: 8px; /* Adjust the height of the scrollbar */
+}
+
+#code_editor_output::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Light gray background for the track */
+}
+
+#code_editor_output::-webkit-scrollbar-thumb {
+  border-radius: 10px; /* Rounded corners for the thumb */
+  background-color: #888; /* Darker color for the thumb */
+}
+
+#code_editor_output::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker thumb color when hovering */
+}
+
+/* Loader animation */
+#code_editor_submit .loader {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid transparent;
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: none;
+}
+
+/* Spin animation for the loader */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Show loader and hide text when button is clicked */
+#code_editor_submit.loading .button-text {
+  opacity: 0;
+}
+
+#code_editor_submit.loading .loader {
+  display: inline-block;
+}
+
+#code_editor_read_docs {
+  background-color: green;
+}

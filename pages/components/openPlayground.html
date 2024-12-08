@@ -1,0 +1,62 @@
+<style>
+  /* Basic button styling */
+  .sticky-button {
+    position: fixed;
+    right: 10px; /* Distance from the right edge of the screen */
+    bottom: 1rem; /* Distance from the bottom of the screen */
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #53af4c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure the button stays on top of other content */
+    transition: transform 0.3s ease, background-color 0.3s ease,
+      box-shadow 0.3s ease;
+    animation: pulse 1.5s infinite; /* Pulsing effect */
+  }
+
+  /* Hover effect */
+  .sticky-button:hover {
+    background-color: #45a049; /* Darker shade of green */
+    transform: scale(1.1); /* Slight zoom effect */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3); /* More pronounced shadow */
+  }
+
+  /* Fade-in animation for the button */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Pulse animation */
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  }
+</style>
+
+<button
+  id="sticky_button"
+  class="sticky-button"
+  onclick="window.location.href='/flow-wing-code-editor'"
+>
+  Open Playground
+</button>

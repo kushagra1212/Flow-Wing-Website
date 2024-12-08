@@ -5,6 +5,7 @@ bring Json
 bring Map
 bring Vec
 bring Str
+bring "SystemProcess-module.fg"
 var errorObject: Vortex::HttpResponseType = {
   content_type: "text/html",
   body: `
@@ -16,11 +17,20 @@ var errorObject: Vortex::HttpResponseType = {
   `,
   status: 500
 }
+var errorObjectPlain: Vortex::HttpResponseType = {
+  content_type: "text/plain",
+  body: "Internal Server Error",
+  status: 500
+}
 
-fun wrap(pageHtml: str) -> str {
+fun wrap(pageHtml: str, showOpenPlayground: bool = true) -> str {
   const headerHtml: str, headerLoadErr: Err::Result = File::read("pages/components/header.html", "r")
   const footerHtml: str, footerLoadErr: Err::Result = File::read("pages/components/footer.html", "r")
   const headHtml: str, headLoadErr: Err::Result = File::read("pages/components/head.html", "r")
+  var openPlayground: str, openPlaygroundLoadErr: Err::Result = File::read("pages/components/openPlayground.html", "r")
+  if !showOpenPlayground {
+    openPlayground = "" 
+  }
   return `
     <html>
       ` + headHtml + `
@@ -28,6 +38,7 @@ fun wrap(pageHtml: str) -> str {
         ` + headerHtml + `
         ` + pageHtml + `
         ` + footerHtml + `
+        ` + openPlayground + `
       </body>
     </html>
   `
@@ -80,9 +91,72 @@ fun handleDownloadPage(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> n
   })
 }
 
+
+fun handleFlowWingCodeEditor(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  const flowWingCodeEditor: str, flowWingCodeEditorLoadErr: Err::Result = File::read("pages/flow-wing-code-editor.html", "r")
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/html",
+    body: wrap(flowWingCodeEditor, false)
+  })
+}
+
+
+fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  var body: str = String(req.body)
+  var len: int = strLength(body)
+  var code: str = ""
+  var i: int = 9
+  while (i < len - 2) {
+    if (Str::compare(Str::int8ToString(body[i]), "\"") == 0 && Str::compare(Str::int8ToString(body[i + 1]), "}") == 0) {
+      break
+    }
+    code = code + Str::int8ToString(body[i]) 
+    i = i + 1 
+  }
+  Str::replaceInPlace(code, "\\n", "\n")
+  Str::replaceInPlace(code, "\\\"", "\"")
+  Str::replaceInPlace(code, "\\\n", "\\n")
+  Str::replaceInPlace(code, "\\\t", "\\t")
+  Str::replaceInPlace(code, "\\\r", "\\r")
+  {
+    var result: str, errorExecution: Err::Result = SystemProcess::runCMD("rm -rf build/bin/code")
+    var result2: str, errorExecution2: Err::Result = SystemProcess::runCMD("rm -rf code.fg")
+  }
+  const fileName: str = "4a7d1ed414474e4033ac29ccb8653"
+  var errorWritingToFile: Err::Result = File::write(fileName + ".fg", code, "wb")
+  if (errorWritingToFile != Nir) {
+    var err: Err::Result = res.send(errorObjectPlain)
+    return :
+  }
+  var result: str, errorExecution: Err::Result = Nir,Nir
+  result, errorExecution = SystemProcess::runCMD("FlowWing " + fileName + ".fg") 
+  if (errorExecution != Nir) {
+    var err: Err::Result = res.send(errorObjectPlain)
+    return :
+  }
+  var errorText: str = ""
+  if (Str::subStrIndex(result, "File: " + fileName + ".fg [Error]") != -1) {
+    var err: Err::Result = res.send({
+      status: 203,
+      content_type: "text/plain",
+      body: result
+    })
+    return :
+  }
+  result, errorExecution = SystemProcess::runCMD("build/bin/" + fileName) 
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/plain",
+    body: result
+  })
+}
+
 const port: int = 8080
 print("Flow-Wing server starting on port: ", port, "\n")
 var server: Vortex::Server = new Vortex::Server(port)
 server.setRoute("GET", "/", handleHomePage)
 server.setRoute("GET", "/downloads/*", handleDownloadPage)
+server.setRoute("GET", "/flow-wing-code-editor", handleFlowWingCodeEditor)
+server.setRoute("POST", "/code/submit", codeSubmit)
 server.start()
