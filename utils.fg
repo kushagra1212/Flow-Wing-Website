@@ -1,0 +1,28 @@
+bring Vec
+bring Str
+
+expose fun stringSplitter(s: str, delimiter: str) -> Vec::String {
+  var result: Vec::String = new Vec::String()
+  var part: str = ""
+  for var i = 0 to Str::length(s) - 1 {
+    if (Str::int8ToString(Int8(s[i])) == delimiter) {
+      if (Str::length(part)) {
+        result.add(part)
+      }
+      part = "" 
+    } or if (i + 1 < Str::length(s) && (String(Str::int8ToString(Int8(s[i])) + Str::int8ToString(Int8(s[i + 1])))) == delimiter) {
+      if (Str::length(part)) {
+        result.add(part)
+      }
+      i = i + 1 
+      part = "" 
+    } else {
+      part = part + Str::int8ToString(Int8(s[i])) 
+    }
+  }
+  if Str::length(part) > 0 {
+    result.add(part)
+  }
+  return result
+}
+

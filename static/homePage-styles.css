@@ -1,7 +1,6 @@
 .home-page {
   text-align: center;
   padding-bottom: 2em;
-  overflow: auto;
   display: flex;
   flex-direction: column;
 }
@@ -32,6 +31,7 @@
   font-weight: 900;
   font-family: Georgia, "Times New Roman", Times, serif;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin-top: 1rem;
 }
 
 .get-started-link-button:hover {

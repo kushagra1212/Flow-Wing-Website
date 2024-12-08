@@ -46,17 +46,11 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
   border-radius: 0.5em;
 }
+
 @media (max-width: 480px) {
   .gif-container {
-    margin-right: 100%;
+    left: 0%;
     position: relative;
     width: 100%;
-    align-items: center;
-  }
-  .gif-container .vscode-extension {
-    margin-right: 100%;
-  }
-  .gif-container img {
-    width: 200%;
   }
 }

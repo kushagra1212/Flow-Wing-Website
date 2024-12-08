@@ -1,0 +1,42 @@
+<link rel="stylesheet" href="/static/codeEditor.css" />
+<label for="editor" id="playground_label">Playground</label>
+<form id="code_editor_form" action="code/submit" method="post">
+  <section style="display: flex; flex-direction: column">
+    <code-bedder
+      data-language="flowwing"
+      id="editor"
+      onhighlight="Prism.highlightElement(this)"
+      name="code"
+      style="flex: 1"
+    >
+    </code-bedder>
+    <section id="code_editor_submit_container">
+      <button id="code_editor_submit" name="submit" type="submit">
+        <span class="button-text">Compiler & Run</span>
+        <span class="loader"></span>
+      </button>
+      <button
+        id="code_editor_read_docs"
+        onclick="handleOpenDocs()"
+        name="read-docs"
+      >
+        Read Docs
+      </button>
+    </section>
+  </section>
+  <section id="code_editor_output_container">
+    <label>Output:</label>
+    <pre id="code_editor_output"></pre>
+  </section>
+</form>
+
+<!-- Prism JS -->
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"
+  defer
+></script>
+<!-- Your Flow-Wing language definition -->
+<script src="/static/js/prism-flowwing.js" defer></script>
+<script src="/static/js/utils.js" defer></script>
+<script src="/static/js/codebedder.js" defer></script>
+<script src="/static/js/codeEditor.js" defer></script>
