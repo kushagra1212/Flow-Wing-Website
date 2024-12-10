@@ -31,7 +31,7 @@ fi
 # Compile the Flow-Wing code
 echo "Compiling Flow-Wing code..."
 
-sudo FlowWing server.fg -L=/home/kushagra/code/Flow-Wing-Website -l=flowwing_vortex 
+sudo FlowWing server.fg -L=/home/kushagrarathore002/Flow-Wing-Website -l=flowwing_vortex 
 
 # Check if the executable was created successfully
 if [ ! -f "$OUTPUT_EXECUTABLE" ]; then
