@@ -6,6 +6,10 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 
 #define MAX_REQUEST_SIZE 10240
 
@@ -333,131 +337,211 @@ void flush() { fflush(stdout); }
 
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// You must free the result if result is non-NULL.
+char *replace_all(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    int len_rep;  // length of rep (the string to remove)
+    int len_with; // length of with (the string to replace rep with)
+    int len_front; // distance between rep and end of last rep
+    int count;    // number of replacements
 
-char *replace_all(const char *source, const char *search, const char *replacement) {
-    size_t search_len = strlen(search);
-    size_t replacement_len = strlen(replacement);
-    
-    // Calculate the initial buffer size for the result
-    size_t result_capacity = strlen(source) + 1; // Start with enough space
-    char *result = malloc(result_capacity);
-    if (result == NULL) {
-        perror("Failed to allocate memory for result");
+    // sanity checks and initialization
+    if (!orig || !rep)
         return NULL;
-    }
-    
-    const char *pos = source; // Pointer to current position in the source string
-    char *current_pos = result; // Pointer to the current position in the result string
+    len_rep = strlen(rep);
+    if (len_rep == 0)
+        return NULL; // empty rep causes infinite loop during count
+    if (!with)
+        with = "";
+    len_with = strlen(with);
 
-    while ((pos = strstr(pos, search)) != NULL) {
-        // Copy the part before the match
-        size_t bytes_to_copy = pos - source;
-        while (result_capacity <= (current_pos - result) + bytes_to_copy + replacement_len + 1) {
-            // Resize result if needed
-            result_capacity *= 2; // Double the size
-            result = realloc(result, result_capacity);
-            if (result == NULL) {
-                perror("Failed to reallocate memory for result");
-                return NULL;
-            }
-            current_pos = result + (current_pos - result); // Adjust current_pos to the new memory location
-        }
-        strncpy(current_pos, source, bytes_to_copy);
-        current_pos += bytes_to_copy;
-
-        // Copy the replacement string
-        strcpy(current_pos, replacement);
-        current_pos += replacement_len;
-
-        // Move past the match in the source string
-        pos += search_len; // Move past the current match
-        source = pos; // Update source to continue searching
+    // count the number of replacements needed
+    ins = orig;
+    for (count = 0; (tmp = strstr(ins, rep)); ++count) {
+        ins = tmp + len_rep;
     }
 
-    // Copy any remaining part of the source string
-    strcpy(current_pos, source);
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
 
+    if (!result)
+        return NULL;
+
+    // first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = ins - orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; // move to next "end of rep"
+    }
+    strcpy(tmp, orig);
     return result;
 }
 
 
 
 
+
+
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <fcntl.h>
+
 typedef struct {
     char *output;  // Command output (if successful)
     char *error;   // Error message (if failed)
 } CommandResult;
-
-void runCommand_internal(const char *command, CommandResult *result,int timeout) {
-    // Reset the result
-    if (result->output != NULL) {
-        free(result->output); // Free previous output before allocating new memory
-    }
+void runCommand_internal(const char *command, CommandResult *result, const char *inputData, int timeout) {
     result->output = NULL;
     result->error = NULL;
 
-    // Use shell invocation to support redirection
-    char shellCommand[1024];
-    snprintf(shellCommand, sizeof(shellCommand), "sh -c \"%s 2>&1\"", command);
+    int pipe_out[2];  // Pipe for child's stdout/stderr
+    int pipe_in[2];   // Pipe for child's stdin
 
-    // Open a pipe to the command for reading
-    FILE *fp = popen(shellCommand, "r");
-    if (fp == NULL) {
-        result->error = "Failed to execute command";
+    if (pipe(pipe_out) == -1 || pipe(pipe_in) == -1) {
+        result->error = "Failed to create pipes";
         return;
     }
 
-    // Initialize dynamic buffer for command output
-    size_t buffer_size = 1024;
-    result->output = malloc(buffer_size);
-
-    if (result->output == NULL) {
-        pclose(fp);
-        result->error = "Memory allocation failed";
+    pid_t pid = fork();
+    if (pid < 0) {
+        result->error = "Failed to fork process";
+        close(pipe_out[0]);
+        close(pipe_out[1]);
+        close(pipe_in[0]);
+        close(pipe_in[1]);
         return;
     }
 
-    size_t output_len = 0;
-    char buffer[256];  // Temporary buffer to hold data
+    if (pid == 0) {  // Child process
+        close(pipe_out[0]);  // Close read end of stdout pipe
+        close(pipe_in[1]);   // Close write end of stdin pipe
 
-    // Track the start time
-    time_t start_time = time(NULL);
-    const int timeout_sec = timeout;
+        dup2(pipe_out[1], STDOUT_FILENO);  // Redirect stdout to write end of stdout pipe
+        dup2(pipe_out[1], STDERR_FILENO);  // Redirect stderr to write end of stdout pipe
+        dup2(pipe_in[0], STDIN_FILENO);    // Redirect stdin to read end of stdin pipe
 
-    // Read the command output
-    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        size_t len = strlen(buffer);
+        close(pipe_out[1]);  // Close write end of stdout pipe
+        close(pipe_in[0]);   // Close read end of stdin pipe
 
-        // Resize the buffer if necessary
-        if (output_len + len >= buffer_size) {
-            buffer_size *= 2;
-            result->output = realloc(result->output, buffer_size);
-            if (result->output == NULL) {
-                pclose(fp);
-                result->error = "Failed to reallocate memory";
+        execlp("sh", "sh", "-c", command, (char *)NULL);
+        perror("execlp failed");
+        exit(1);
+    } else {  // Parent process
+        close(pipe_out[1]);  // Close write end of stdout pipe
+        close(pipe_in[0]);   // Close read end of stdin pipe
+
+        // Write input data to child's stdin
+        if (inputData) {
+            ssize_t input_len = strlen(inputData);
+            if (write(pipe_in[1], inputData, input_len) != input_len) {
+                result->error = "Failed to write input data";
+                close(pipe_in[1]);
+                close(pipe_out[0]);
+                kill(pid, SIGKILL);
+                waitpid(pid, NULL, 0);
                 return;
             }
         }
+        close(pipe_in[1]);  // Close write end of stdin pipe after sending data
 
-        // Append the new data to the output buffer
-        memcpy(result->output + output_len, buffer, len);
-        output_len += len;
-
-        // Check for timeout
-        if (timeout_sec != -1 && difftime(time(NULL), start_time) > timeout_sec) {
-            result->error = "Command execution timed out";
-            break;
+        // Read output from child's stdout/stderr
+        size_t buffer_size = 1024;
+        result->output = malloc(buffer_size);
+        if (!result->output) {
+            result->error = "Memory allocation failed";
+            close(pipe_out[0]);
+            kill(pid, SIGKILL);
+            waitpid(pid, NULL, 0);
+            return;
         }
+
+        size_t output_len = 0;
+        char buffer[256];
+        fd_set read_fds;
+        struct timeval start_time, current_time, elapsed_time;
+
+        gettimeofday(&start_time, NULL);
+
+        int child_terminated = 0;
+
+        while (1) {
+            FD_ZERO(&read_fds);
+            FD_SET(pipe_out[0], &read_fds);
+
+            struct timeval timeout_tv;
+            gettimeofday(&current_time, NULL);
+            timersub(&current_time, &start_time, &elapsed_time);
+
+            if (elapsed_time.tv_sec >= timeout) {
+                result->error = "Command execution timed out";
+                kill(pid, SIGKILL);
+                break;
+            }
+
+            timeout_tv.tv_sec = timeout - elapsed_time.tv_sec;
+            timeout_tv.tv_usec = 0;
+
+            int sel_res = select(pipe_out[0] + 1, &read_fds, NULL, NULL, &timeout_tv);
+            if (sel_res < 0) {
+                result->error = "Select failed";
+                break;
+            }else if (sel_res == 0) {
+                result->error = "Command execution timed out";
+                kill(pid, SIGKILL);
+                break;
+            }
+            
+             if (FD_ISSET(pipe_out[0], &read_fds)) {
+                ssize_t bytes_read = read(pipe_out[0], buffer, sizeof(buffer));
+                if (bytes_read < 0) {
+                    result->error = "Read error";
+                    break;
+                } else if (bytes_read == 0) {
+                    // EOF
+                    break;
+                }
+
+                // Resize buffer if needed
+                if (output_len + bytes_read >= buffer_size) {
+                    buffer_size *= 2;
+                    char *new_buffer = realloc(result->output, buffer_size);
+                    if (!new_buffer) {
+                        result->error = "Failed to reallocate memory";
+                        break;
+                    }
+                    result->output = new_buffer;
+                }
+
+                memcpy(result->output + output_len, buffer, bytes_read);
+                output_len += bytes_read;
+            }
+        }
+
+        if (result->output) {
+            result->output[output_len] = '\0';  // Null-terminate the string
+        }
+
+
+            kill(pid, SIGKILL);
+ 
+
+        waitpid(pid, NULL, 0);
+        close(pipe_out[0]);
     }
-
-    // Null-terminate the string
-    result->output[output_len] = '\0';
-
-    // Close the pipe
-    pclose(fp);
 }
-

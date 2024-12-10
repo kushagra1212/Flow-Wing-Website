@@ -1,5 +1,8 @@
 {
-  "FlowWing": {
-    "modulePath": "/opt/homebrew/opt/flowwing/lib/modules"
-  }
+ 
+"FlowWing": {
+  "compilerPath": "FlowWing",
+"modulePath":"/usr/local/lib/FlowWing/lib/modules"
+}
+
 }

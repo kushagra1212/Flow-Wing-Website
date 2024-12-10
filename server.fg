@@ -105,12 +105,11 @@ fun handleFlowWingCodeEditor(req: Vortex::HttpRequest, res: Vortex::HttpResponse
 fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
   var body: str = String(req.body)
   var len: int = strLength(body)
+  var codeLength: int = Str::subStrIndex(body, "\",\"input\"")
   var code: str = ""
+  var input: str = ""
   var i: int = 9
-  while (i < len - 2) {
-    if (Str::compare(Str::int8ToString(body[i]), "\"") == 0 && Str::compare(Str::int8ToString(body[i + 1]), "}") == 0) {
-      break
-    }
+  while (i < codeLength) {
     code = code + Str::int8ToString(body[i]) 
     i = i + 1 
   }
@@ -119,6 +118,14 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
   Str::replaceInPlace(code, "\\\n", "\\n")
   Str::replaceInPlace(code, "\\\t", "\\t")
   Str::replaceInPlace(code, "\\\r", "\\r")
+  i = i + 11 
+  while (i < len - 2) {
+    if (Str::compare(Str::int8ToString(body[i]), "\"") == 0 && Str::compare(Str::int8ToString(body[i + 1]), "}") == 0) {
+      break
+    }
+    input = input + Str::int8ToString(body[i]) 
+    i = i + 1 
+  }
   {
     var result: str, errorExecution: Err::Result = SystemProcess::runCMD("rm -rf build/bin/code")
     var result2: str, errorExecution2: Err::Result = SystemProcess::runCMD("rm -rf code.fg")
@@ -144,7 +151,12 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     })
     return :
   }
-  result, errorExecution = SystemProcess::runCMD("build/bin/" + fileName) 
+  result, errorExecution = SystemProcess::runCMD("build/bin/" + fileName, input) 
+  if (errorExecution) {
+    if (errorExecution.message == "Command execution timed out") {
+      result = "Command execution timed out: TLE" 
+    }
+  }
   var err: Err::Result = res.send({
     status: 200,
     content_type: "text/plain",

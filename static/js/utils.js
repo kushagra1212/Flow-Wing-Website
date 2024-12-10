@@ -10,18 +10,37 @@ function parseANSI(input) {
     "[37m": "ansi-white",
     "[39m": "ansi-reset",
     "[0m": "ansi-reset",
+    "[1m": "ansi-bold", // Bold style
+    "[1;31m": "ansi-bold-red", // Bold red style,
+    "[1;32m": "ansi-bold-green", // Bold green style
+    "[1;33m": "ansi-bold-yellow", // Bold yellow style
+    "[1;34m": "ansi-bold-blue", // Bold blue style
+    "[1;35m": "ansi-bold-magenta", // Bold magenta style
+    "[1;36m": "ansi-bold-cyan", // Bold cyan style
+    "[1;37m": "ansi-bold-white", // Bold white style
   };
 
-  // Regex to match ANSI escape codes and other content
-  const regex = /(\x1b\[[0-9;]*m|[^\x1b]*)/g;
+  let openTags = [];
+  const regex = /(\x1b\[[0-9;]*m|[^\x1b]+)/g;
 
-  return input
-    .replace(regex, (match) => {
-      if (ansiCodes[match]) {
-        return `<span class="${ansiCodes[match]}">`;
-      } else {
-        return match; // Return normal text as is
+  return input.replace(regex, (match) => {
+    if (ansiCodes[match]) {
+      if (match === "[0m" || match === "[39m") {
+        // Close all open tags on reset
+        const closeAllTags = openTags.reverse().map(() => "</span>").join("");
+        openTags = [];
+        return closeAllTags;
       }
-    })
-    .replace(/\x1b\[[0-9;]*m/g, "</span>"); // Close the span after each color code
+
+      // Open a new span
+      openTags.push(ansiCodes[match]);
+      return `<span class="${ansiCodes[match]}">`;
+    } else {
+      // Regular text, escape HTML entities
+      return match
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\^/g, "&#94;"); // Handle caret symbol
+    }
+  }) + openTags.reverse().map(() => "</span>").join(""); // Close any remaining open tags
 }

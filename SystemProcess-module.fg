@@ -4,12 +4,12 @@ type CommandResult = {
   output: str,
   error: str,
 }
-fun runCommand_internal(command: as str, result: SystemProcess::CommandResult, timeOut: as int) -> as nthg decl
+fun runCommand_internal(command: as str, result: SystemProcess::CommandResult, input: as str, timeOut: as int) -> as nthg decl
 
 
-fun runCMD(command: as str, timeOut: int = 5) -> str, Err::Result {
+fun runCMD(command: as str,input: as str = "", timeOut: int = 2) -> str, Err::Result {
   var result: SystemProcess::CommandResult
-  runCommand_internal(command, result, timeOut)
+  runCommand_internal(command, result, input, timeOut)
   if (result.error != Nir) {
     return "", new Err::Result(result.error, Err::CODE.FAILED, "In runCMD")
   }
