@@ -126,6 +126,7 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     input = input + Str::int8ToString(body[i]) 
     i = i + 1 
   }
+
   {
     var result: str, errorExecution: Err::Result = SystemProcess::runCMD("rm -rf build/bin/code")
     var result2: str, errorExecution2: Err::Result = SystemProcess::runCMD("rm -rf code.fg")
@@ -133,13 +134,21 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
   const fileName: str = "4a7d1ed414474e4033ac29ccb8653"
   var errorWritingToFile: Err::Result = File::write(fileName + ".fg", code, "wb")
   if (errorWritingToFile != Nir) {
-    var err: Err::Result = res.send(errorObjectPlain)
+  var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/plain",
+    body: "No Output"
+  })
     return :
   }
   var result: str, errorExecution: Err::Result = Nir,Nir
   result, errorExecution = SystemProcess::runCMD("FlowWing " + fileName + ".fg") 
   if (errorExecution != Nir) {
-    var err: Err::Result = res.send(errorObjectPlain)
+    var err: Err::Result = res.send({
+    status: 200,
+    content_type: "text/plain",
+    body: "No Output"
+  })
     return :
   }
   var errorText: str = ""
