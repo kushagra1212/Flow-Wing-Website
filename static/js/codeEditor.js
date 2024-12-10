@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const output = document.getElementById("code_editor_output");
   const form = document.getElementById("code_editor_form");
   const editor = document.getElementById("editor");
-  const input =document.getElementById("code_editor_input");
+  const input = document.getElementById("code_editor_input");
   const compilerAndRunButton = document.getElementById("code_editor_submit");
   const readDocsButton = document.getElementById("code_editor_read_docs");
 
@@ -16,17 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "Content-Type": "text/plain",
       },
       body: JSON.stringify({
-        code: editor.children[1].children[0].textContent,
-        input:input.value
+        code:
+          "/;  Your Code Here  \n" + editor.children[1].children[0].textContent,
+        input: input.value,
       }),
     })
       .then((response) => response.text() || "")
       .then((data) => {
         console.log("Response From Server Raw", data);
 
-        const colorizedCode = parseANSI(
-          data
-        );
+        const colorizedCode = parseANSI(data);
         console.log("Response From Server", colorizedCode);
         output.innerHTML = colorizedCode;
         // Update the output section with server response
