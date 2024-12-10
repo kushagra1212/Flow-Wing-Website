@@ -147,7 +147,7 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     var err: Err::Result = res.send({
       status: 203,
       content_type: "text/plain",
-      body: result
+      body: ((result != Nir) ? result : "")
     })
     return :
   }
@@ -160,7 +160,7 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
   var err: Err::Result = res.send({
     status: 200,
     content_type: "text/plain",
-    body: result
+    body: ((result != Nir) ? result : "")
   })
 }
 
