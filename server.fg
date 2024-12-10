@@ -150,12 +150,13 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     var err: Err::Result = res.send(errorObjectPlain)
     return :
   }
+  const NO_OUTPUT: str = "[No Output]"
   var errorText: str = ""
   if (Str::subStrIndex(result, "File: " + fileName + ".fg [Error]") != -1) {
     var err: Err::Result = res.send({
       status: 203,
       content_type: "text/plain",
-      body: ((result != Nir) ? result : "")
+      body: ((result != Nir && result != "") ? result : NO_OUTPUT)
     })
     return :
   }
@@ -168,7 +169,7 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
   var err: Err::Result = res.send({
     status: 200,
     content_type: "text/plain",
-    body: ((result != Nir) ? result : "")
+    body: ((result != Nir && result != "") ? result : NO_OUTPUT)
   })
 }
 
