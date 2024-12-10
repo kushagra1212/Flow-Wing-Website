@@ -16,8 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Content-Type": "text/plain",
       },
       body: JSON.stringify({
-        code:
-          "/;  Your Code Here  \n" + editor.children[1].children[0].textContent,
+        code: editor.children[1].children[0].textContent,
         input: input.value,
       }),
     })

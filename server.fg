@@ -113,6 +113,14 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     code = code + Str::int8ToString(body[i]) 
     i = i + 1 
   }
+  if (!code) {
+    var err: Err::Result = res.send({
+      status: 203,
+      content_type: "text/plain",
+      body: "[No Output]"
+    })
+    return :
+  }
   Str::replaceInPlace(code, "\\n", "\n")
   Str::replaceInPlace(code, "\\\"", "\"")
   Str::replaceInPlace(code, "\\\n", "\\n")
@@ -126,7 +134,6 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     input = input + Str::int8ToString(body[i]) 
     i = i + 1 
   }
-
   {
     var result: str, errorExecution: Err::Result = SystemProcess::runCMD("rm -rf build/bin/code")
     var result2: str, errorExecution2: Err::Result = SystemProcess::runCMD("rm -rf code.fg")
