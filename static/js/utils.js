@@ -23,24 +23,38 @@ function parseANSI(input) {
   let openTags = [];
   const regex = /(\x1b\[[0-9;]*m|[^\x1b]+)/g;
 
-  return input.replace(regex, (match) => {
-    if (ansiCodes[match]) {
-      if (match === "[0m" || match === "[39m") {
-        // Close all open tags on reset
-        const closeAllTags = openTags.reverse().map(() => "</span>").join("");
-        openTags = [];
-        return closeAllTags;
-      }
+  return (
+    input.replace(regex, (match) => {
+      if (ansiCodes[match]) {
+        if (match === "[0m" || match === "[39m") {
+          // Close all open tags on reset
+          const closeAllTags = openTags
+            .reverse()
+            .map(() => "</span>")
+            .join("");
+          openTags = [];
+          return closeAllTags;
+        }
 
-      // Open a new span
-      openTags.push(ansiCodes[match]);
-      return `<span class="${ansiCodes[match]}">`;
-    } else {
-      // Regular text, escape HTML entities
-      return match
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\^/g, "&#94;"); // Handle caret symbol
-    }
-  }) + openTags.reverse().map(() => "</span>").join(""); // Close any remaining open tags
+        // Open a new span
+        openTags.push(ansiCodes[match]);
+        return `<span class="${ansiCodes[match]}">`;
+      } else {
+        // Regular text, escape HTML entities
+        return match
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\^/g, "&#94;"); // Handle caret symbol
+      }
+    }) +
+    openTags
+      .reverse()
+      .map(() => "</span>")
+      .join("")
+  ); // Close any remaining open tags
 }
+
+const FLOW_WING_LOCAL_STORAGE = {
+  CODE_LOCAL_STORAGE_KEY: "code_flow_wing",
+  INPUT_LOCAL_STORAGE_KEY: "input_flow_wing",
+};
