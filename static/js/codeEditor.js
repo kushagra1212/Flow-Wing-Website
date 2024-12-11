@@ -8,36 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load code from localStorage if available
 
-  const savedCode = localStorage.getItem(
-    FLOW_WING_LOCAL_STORAGE.CODE_LOCAL_STORAGE_KEY
-  );
   const savedInput = localStorage.getItem(
     FLOW_WING_LOCAL_STORAGE.INPUT_LOCAL_STORAGE_KEY
   );
 
-  setTimeout(() => {
-    if (
-      savedCode &&
-      editor?.childNodes?.[1]?.childNodes?.[0] &&
-      editor?.childNodes?.[1]?.childNodes?.[0]?.innerHTML !== savedCode
-    ) {
-      editor.childNodes[1].childNodes[0].innerHTML = savedCode;
-    }
-
-    if (savedInput) {
-      input.value = savedInput;
-    }
-  }, 800);
-  // Observe changes in the editor and update localStorage
-  const observer = new MutationObserver((records) => {
-    const currentCode = editor?.childNodes?.[1]?.childNodes?.[0]?.innerHTML;
-    if (currentCode) {
-      localStorage.setItem(
-        FLOW_WING_LOCAL_STORAGE.CODE_LOCAL_STORAGE_KEY,
-        currentCode
-      ); // Save to localStorage
-    }
-  });
+  if (savedInput) {
+    input.value = savedInput;
+  }
 
   input.addEventListener("input", () => {
     localStorage.setItem(
@@ -45,8 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
       input.value
     ); // Save to localStorage
   });
-
-  observer.observe(editor, { childList: true, subtree: true });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault(); // Prevent default form submission

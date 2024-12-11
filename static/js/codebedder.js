@@ -132,7 +132,7 @@
     render() {
       const container = this;
 
-      const codeContent = this.textContent;
+      const codeContent = this.getStoredContent() || this.textContent;
       this.textContent = "";
 
       const style = document.createElement("style");
@@ -169,7 +169,8 @@
 
         // pre ignores an empty new line at the end which breaks scrolling - an extra character fixes it
         code.textContent = this.value + (this.value.endsWith("\n") ? " " : "");
-
+        // Save the content to local storage
+        container.storeContent(this.value);
         if (container.getAttribute("onhighlight")) {
           (function () {
             eval(container.getAttribute("onhighlight"));
@@ -185,8 +186,22 @@
       this.events.load = true;
       this.dispatchEvent(new Event("load"));
       this.textarea.dispatchEvent(new Event("input"));
+    } // Store the content to local storage
+    storeContent(content) {
+      const storageKey = this.getStorageKey();
+
+      localStorage.setItem(storageKey, content);
+    }
+    // Retrieve the content from local storage
+    getStoredContent() {
+      const storageKey = this.getStorageKey();
+      return localStorage.getItem(storageKey);
     }
 
+    // Generate a unique storage key based on attributes or fallback to a default
+    getStorageKey() {
+      return FLOW_WING_LOCAL_STORAGE.CODE_LOCAL_STORAGE_KEY;
+    }
     // Event handling
     on(...args) {
       const [eventName, callback] = args;
