@@ -7,7 +7,7 @@ type CommandResult = {
 fun runCommand_internal(command: as str, result: SystemProcess::CommandResult, input: as str, timeOut: as int) -> as nthg decl
 
 
-fun runCMD(command: as str,input: as str = "", timeOut: int = 2) -> str, Err::Result {
+fun runCMD(command: as str, input: as str = "", timeOut: int = 2) -> str, Err::Result {
   var result: SystemProcess::CommandResult
   runCommand_internal(command, result, input, timeOut)
   if (result.error != Nir) {

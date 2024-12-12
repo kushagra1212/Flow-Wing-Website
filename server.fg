@@ -6,6 +6,7 @@ bring Map
 bring Vec
 bring Str
 bring "SystemProcess-module.fg"
+bring {ANSI_RED} from "colors.fg"
 var errorObject: Vortex::HttpResponseType = {
   content_type: "text/html",
   body: `
@@ -19,7 +20,7 @@ var errorObject: Vortex::HttpResponseType = {
 }
 var errorObjectPlain: Vortex::HttpResponseType = {
   content_type: "text/plain",
-  body: "Internal Server Error",
+  body: ANSI_RED + "Internal Server Error",
   status: 500
 }
 
@@ -102,18 +103,116 @@ fun handleFlowWingCodeEditor(req: Vortex::HttpRequest, res: Vortex::HttpResponse
 }
 
 
-fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
-  var body: str = String(req.body)
-  var len: int = strLength(body)
-  var codeLength: int = Str::subStrIndex(body, "\",\"input\"")
-  var code: str = ""
-  var input: str = ""
-  var i: int = 9
-  while (i < codeLength) {
-    code = code + Str::int8ToString(body[i]) 
-    i = i + 1 
+fun getCodeAndInput(inout body: str, inout len: int) -> str, str {
+  var codeData: str = ""
+  var inputData: str = ""
+  var inputStartIndex: int = Str::subStrIndex(body, "$input_flowwing$") - 3
+  var readingCode: bool = true
+  var j: int = 9
+  print("inputStartIndex: ", inputStartIndex, "\n")
+  while j < len - 2 {
+    if (j == inputStartIndex) {
+      j = j + Str::length("$input_flowwing$") + 6        /; ","
+ 
+      readingCode = false 
+      continue
+    }
+    /;! //n for newline 
+      /;! ///n for newline inside string
+
+    if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "n") {
+      if (readingCode) {
+        codeData = codeData + "\n" 
+      } else {
+        inputData = inputData + "\n" 
+      }
+      j = j + 2 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "n") {
+      if (readingCode) {
+        codeData = codeData + "\\n" 
+      } else {
+        inputData = inputData + "\\n" 
+      }
+      j = j + 3 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "\\" && Str::int8ToString(body[j + 3]) == "\"") {
+      if (readingCode) {
+        codeData = codeData + "\\\"" 
+      } else {
+        inputData = inputData + "\\\"" 
+      }
+      j = j + 4 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "t") {
+      if (readingCode) {
+        codeData = codeData + "\\t" 
+      } else {
+        inputData = inputData + "\\t" 
+      }
+      j = j + 3 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "r") {
+      if (readingCode) {
+        codeData = codeData + "\\r" 
+      } else {
+        inputData = inputData + "\\r" 
+      }
+      j = j + 3 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "\\") {
+      if (readingCode) {
+        codeData = codeData + "\\\\\\" 
+      } else {
+        inputData = inputData + "\\\\\\" 
+      }
+      j = j + 3 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\\" && Str::int8ToString(body[j + 2]) == "'") {
+      if (readingCode) {
+        codeData = codeData + "\\'" 
+      } else {
+        inputData = inputData + "\\'" 
+      }
+      j = j + 3 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "\"") {
+      if (readingCode) {
+        codeData = codeData + "\"" 
+      } else {
+        inputData = inputData + "\"" 
+      }
+      j = j + 2 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "n") {
+      if (readingCode) {
+        codeData = codeData + "\n" 
+      } else {
+        inputData = inputData + "\n" 
+      }
+      j = j + 2 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "t") {
+      if (readingCode) {
+        codeData = codeData + "\t" 
+      } else {
+        inputData = inputData + "\t" 
+      }
+      j = j + 2 
+    } or if (Str::int8ToString(body[j]) == "\\" && Str::int8ToString(body[j + 1]) == "r") {
+      if (readingCode) {
+        codeData = codeData + "\r" 
+      } else {
+        inputData = inputData + "\r" 
+      }
+      j = j + 2 
+    } else {
+      if (readingCode) {
+        codeData = codeData + Str::int8ToString(body[j]) 
+      } else {
+        inputData = inputData + Str::int8ToString(body[j]) 
+      }
+      j = j + 1 
+    }
   }
-  if (!code) {
+  return codeData + "\n", inputData
+}
+
+
+fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
+  var codeData: str, inputData: str = getCodeAndInput(req.body, req.headers.content_length)
+  if (!codeData) {
     var err: Err::Result = res.send({
       status: 203,
       content_type: "text/plain",
@@ -121,30 +220,17 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     })
     return :
   }
-  Str::replaceInPlace(code, "\\n", "\n")
-  Str::replaceInPlace(code, "\\\"", "\"")
-  Str::replaceInPlace(code, "\\\n", "\\n")
-  Str::replaceInPlace(code, "\\\t", "\\t")
-  Str::replaceInPlace(code, "\\\r", "\\r")
-  i = i + 11 
-  while (i < len - 2) {
-    if (Str::compare(Str::int8ToString(body[i]), "\"") == 0 && Str::compare(Str::int8ToString(body[i + 1]), "}") == 0) {
-      break
-    }
-    input = input + Str::int8ToString(body[i]) 
-    i = i + 1 
-  }
   {
     var result: str, errorExecution: Err::Result = SystemProcess::runCMD("rm -rf build/bin/code")
     var result2: str, errorExecution2: Err::Result = SystemProcess::runCMD("rm -rf code.fg")
   }
   const fileName: str = "4a7d1ed414474e4033ac29ccb8653"
-  var errorWritingToFile: Err::Result = File::write(fileName + ".fg", code, "wb")
+  var errorWritingToFile: Err::Result = File::write(fileName + ".fg", codeData, "wb")
   if (errorWritingToFile != Nir) {
     var err: Err::Result = res.send(errorObjectPlain)
     return :
   }
-  var result: str, errorExecution: Err::Result = Nir,Nir
+  var result: str, errorExecution: Err::Result = "",Nir
   result, errorExecution = SystemProcess::runCMD("FlowWing " + fileName + ".fg") 
   if (errorExecution != Nir) {
     var err: Err::Result = res.send(errorObjectPlain)
@@ -160,10 +246,20 @@ fun codeSubmit(req: Vortex::HttpRequest, res: Vortex::HttpResponse) -> nthg {
     })
     return :
   }
-  result, errorExecution = SystemProcess::runCMD("build/bin/" + fileName, input) 
+  if (result != "" && result != "\n") {
+    var err: Err::Result = res.send({
+      status: 203,
+      content_type: "text/plain",
+      body: ANSI_RED + ((result != Nir && result != "") ? result : NO_OUTPUT)
+    })
+    return :
+  }
+  result, errorExecution = SystemProcess::runCMD("build/bin/" + fileName, inputData) 
   if (errorExecution) {
     if (errorExecution.message == "Command execution timed out") {
       result = "Command execution timed out: TLE" 
+    } else {
+      result = ANSI_RED + "Command execution failed: " + errorExecution.message 
     }
   }
   var err: Err::Result = res.send({

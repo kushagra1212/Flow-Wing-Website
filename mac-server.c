@@ -387,81 +387,174 @@ char *replace_all(const char *source, const char *pattern, const char *replaceme
 }
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <fcntl.h>
+
 typedef struct {
     char *output;  // Command output (if successful)
     char *error;   // Error message (if failed)
 } CommandResult;
-
-void runCommand_internal(const char *command, CommandResult *result,int timeout) {
-    // Reset the result
-    if (result->output != NULL) {
-        free(result->output); // Free previous output before allocating new memory
-    }
+void runCommand_internal(const char *command, CommandResult *result, const char *inputData, int timeout) {
     result->output = NULL;
     result->error = NULL;
 
-    // Use shell invocation to support redirection
-    char shellCommand[1024];
-    snprintf(shellCommand, sizeof(shellCommand), "sh -c \"%s 2>&1\"", command);
+    int pipe_out[2];  // Pipe for child's stdout/stderr
+    int pipe_in[2];   // Pipe for child's stdin
 
-    // Open a pipe to the command for reading
-    FILE *fp = popen(shellCommand, "r");
-    if (fp == NULL) {
-        result->error = "Failed to execute command";
+    if (pipe(pipe_out) == -1 || pipe(pipe_in) == -1) {
+        result->error = "Failed to create pipes";
         return;
     }
 
-    // Initialize dynamic buffer for command output
-    size_t buffer_size = 1024;
-    result->output = malloc(buffer_size);
-
-    if (result->output == NULL) {
-        pclose(fp);
-        result->error = "Memory allocation failed";
+    pid_t pid = fork();
+    if (pid < 0) {
+        result->error = "Failed to fork process";
+        close(pipe_out[0]);
+        close(pipe_out[1]);
+        close(pipe_in[0]);
+        close(pipe_in[1]);
         return;
     }
 
-    size_t output_len = 0;
-    char buffer[256];  // Temporary buffer to hold data
+    if (pid == 0) {  // Child process
+        close(pipe_out[0]);  // Close read end of stdout pipe
+        close(pipe_in[1]);   // Close write end of stdin pipe
 
-    // Track the start time
-    time_t start_time = time(NULL);
-    const int timeout_sec = timeout;
+        dup2(pipe_out[1], STDOUT_FILENO);  // Redirect stdout to write end of stdout pipe
+        dup2(pipe_out[1], STDERR_FILENO);  // Redirect stderr to write end of stdout pipe
+        dup2(pipe_in[0], STDIN_FILENO);    // Redirect stdin to read end of stdin pipe
 
-    // Read the command output
-    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        size_t len = strlen(buffer);
+        close(pipe_out[1]);  // Close write end of stdout pipe
+        close(pipe_in[0]);   // Close read end of stdin pipe
 
-        // Resize the buffer if necessary
-        if (output_len + len >= buffer_size) {
-            buffer_size *= 2;
-            result->output = realloc(result->output, buffer_size);
-            if (result->output == NULL) {
-                pclose(fp);
-                result->error = "Failed to reallocate memory";
+        execlp("sh", "sh", "-c", command, (char *)NULL);
+        perror("execlp failed");
+        exit(1);
+    } else {  // Parent process
+        close(pipe_out[1]);  // Close write end of stdout pipe
+        close(pipe_in[0]);   // Close read end of stdin pipe
+
+        // Write input data to child's stdin
+        if (inputData) {
+            ssize_t input_len = strlen(inputData);
+            if (write(pipe_in[1], inputData, input_len) != input_len) {
+                result->error = "Failed to write input data";
+                close(pipe_in[1]);
+                close(pipe_out[0]);
+                kill(pid, SIGKILL);
+                waitpid(pid, NULL, 0);
                 return;
             }
         }
+        close(pipe_in[1]);  // Close write end of stdin pipe after sending data
 
-        // Append the new data to the output buffer
-        memcpy(result->output + output_len, buffer, len);
-        output_len += len;
+        // Read output from child's stdout/stderr
+        size_t buffer_size = 1024;
+        result->output = malloc(buffer_size);
+        if (!result->output) {
+            result->error = "Memory allocation failed";
+            close(pipe_out[0]);
+            kill(pid, SIGKILL);
+            waitpid(pid, NULL, 0);
+            return;
+        }
 
-        // Check for timeout
-        if (timeout_sec != -1 && difftime(time(NULL), start_time) > timeout_sec) {
-            result->error = "Command execution timed out";
-            break;
+        size_t output_len = 0;
+        char buffer[256];
+        fd_set read_fds;
+        struct timeval start_time, current_time, elapsed_time;
+
+        gettimeofday(&start_time, NULL);
+
+        int child_terminated = 0;
+
+        while (1) {
+            FD_ZERO(&read_fds);
+            FD_SET(pipe_out[0], &read_fds);
+
+            struct timeval timeout_tv;
+            gettimeofday(&current_time, NULL);
+            timersub(&current_time, &start_time, &elapsed_time);
+
+            if (elapsed_time.tv_sec >= timeout) {
+                result->error = "Command execution timed out";
+                kill(pid, SIGKILL);
+                break;
+            }
+
+            timeout_tv.tv_sec = timeout - elapsed_time.tv_sec;
+            timeout_tv.tv_usec = 0;
+
+            int sel_res = select(pipe_out[0] + 1, &read_fds, NULL, NULL, &timeout_tv);
+            if (sel_res < 0) {
+                result->error = "Select failed";
+                break;
+            }else if (sel_res == 0) {
+                result->error = "Command execution timed out";
+                kill(pid, SIGKILL);
+                break;
+            }
+            
+             if (FD_ISSET(pipe_out[0], &read_fds)) {
+                ssize_t bytes_read = read(pipe_out[0], buffer, sizeof(buffer));
+                if (bytes_read < 0) {
+                    result->error = "Read error";
+                    break;
+                } else if (bytes_read == 0) {
+                    // EOF
+                    break;
+                }
+
+                // Resize buffer if needed
+                if (output_len + bytes_read >= buffer_size) {
+                    buffer_size *= 2;
+                    char *new_buffer = realloc(result->output, buffer_size);
+                    if (!new_buffer) {
+                        result->error = "Failed to reallocate memory";
+                        break;
+                    }
+                    result->output = new_buffer;
+                }
+
+                memcpy(result->output + output_len, buffer, bytes_read);
+                output_len += bytes_read;
+            }
+        }
+
+        if (result->output) {
+            result->output[output_len] = '\0';  // Null-terminate the string
+        }
+
+
+            kill(pid, SIGKILL);
+ 
+int status;
+waitpid(pid, &status, 0);
+
+if (WIFSIGNALED(status)) {
+    int signal = WTERMSIG(status);
+    size_t error_msg_len = snprintf(NULL, 0, "Process terminated by signal %d", signal) + 1;
+    result->error = malloc(error_msg_len);
+    if (result->error) {
+        snprintf(result->error, error_msg_len, "Process terminated by signal %d", signal);
+    }
+} else if (WIFEXITED(status)) {
+    int exit_status = WEXITSTATUS(status);
+    if (exit_status != 0) { // Non-zero exit status indicates an error
+        size_t error_msg_len = snprintf(NULL, 0, "Process exited with status %d", exit_status) + 1;
+        result->error = malloc(error_msg_len);
+        if (result->error) {
+            snprintf(result->error, error_msg_len, "Process exited with status %d", exit_status);
         }
     }
-
-    // Null-terminate the string
-    result->output[output_len] = '\0';
-
-    // Close the pipe
-    pclose(fp);
 }
 
+        close(pipe_out[0]);
+    }
+}

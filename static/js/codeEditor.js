@@ -27,15 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault(); // Prevent default form submission
 
     compilerAndRunButton.classList.add("loading");
+    const bodyContent = JSON.stringify({
+      code: editor.children[1].children[0].textContent,
+      $input_flowwing$: input.value,
+    });
+
     fetch(form.action, {
       method: "POST", // Use method from the form
       headers: {
-        "Content-Type": "text/plain",
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Content-Length": bodyContent.length.toString(),
       },
-      body: JSON.stringify({
-        code: editor.children[1].children[0].textContent,
-        input: input.value,
-      }),
+      body: bodyContent,
     })
       .then((response) => response.text() || "")
       .then((data) => {

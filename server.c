@@ -541,7 +541,26 @@ void runCommand_internal(const char *command, CommandResult *result, const char 
             kill(pid, SIGKILL);
  
 
-        waitpid(pid, NULL, 0);
+int status;
+waitpid(pid, &status, 0);
+
+if (WIFSIGNALED(status)) {
+    int signal = WTERMSIG(status);
+    size_t error_msg_len = snprintf(NULL, 0, "Process terminated by signal %d", signal) + 1;
+    result->error = malloc(error_msg_len);
+    if (result->error) {
+        snprintf(result->error, error_msg_len, "Process terminated by signal %d", signal);
+    }
+} else if (WIFEXITED(status)) {
+    int exit_status = WEXITSTATUS(status);
+    if (exit_status != 0) { // Non-zero exit status indicates an error
+        size_t error_msg_len = snprintf(NULL, 0, "Process exited with status %d", exit_status) + 1;
+        result->error = malloc(error_msg_len);
+        if (result->error) {
+            snprintf(result->error, error_msg_len, "Process exited with status %d", exit_status);
+        }
+    }
+}
         close(pipe_out[0]);
     }
 }
