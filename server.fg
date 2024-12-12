@@ -109,7 +109,6 @@ fun getCodeAndInput(inout body: str, inout len: int) -> str, str {
   var inputStartIndex: int = Str::subStrIndex(body, "$input_flowwing$") - 3
   var readingCode: bool = true
   var j: int = 9
-  print("inputStartIndex: ", inputStartIndex, "\n")
   while j < len - 2 {
     if (j == inputStartIndex) {
       j = j + Str::length("$input_flowwing$") + 6        /; ","
