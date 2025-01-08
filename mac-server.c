@@ -558,3 +558,63 @@ if (WIFSIGNALED(status)) {
         close(pipe_out[0]);
     }
 }
+
+
+char* readFile(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return NULL; // Indicate failure
+    }
+
+    // Determine the size of the file
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET); // Rewind to the beginning
+
+    // Allocate memory for the string (including null terminator)
+    char* buffer = (char*)malloc(file_size + 1);
+    if (buffer == NULL) {
+        perror("Error allocating memory");
+        fclose(file);
+        return NULL; // Indicate failure
+    }
+
+    // Read the entire file content into the buffer
+    size_t bytes_read = fread(buffer, 1, file_size, file);
+    if (bytes_read < file_size) {
+        if (ferror(file)) {
+            perror("Error reading file");
+        } else {
+            fprintf(stderr, "Incomplete read, expected %ld bytes, read %zu bytes\n", file_size, bytes_read);
+        }
+        free(buffer);
+        fclose(file);
+        return NULL; // Indicate failure
+    }
+
+    // Add the null terminator to make it a valid C string
+    buffer[file_size] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
+int writeFile(const char* filename, const char* text) {
+    FILE* file = fopen(filename, "w"); // Open the file in write mode ("w")
+    if (file == NULL) {
+        perror("Error opening file for writing");
+        return 1; // Indicate failure
+    }
+
+    // Write the entire text to the file
+    if (fputs(text, file) == EOF) {
+        perror("Error writing to file");
+        fclose(file);
+        return 1; // Indicate failure
+    }
+
+    fclose(file);
+    return 0; // Indicate success
+}
+
