@@ -1,0 +1,65 @@
+print("Hello world")
+bring Str
+bring Map
+var n: int
+
+fun getAlpha(inout num: int) -> str {
+  return Str::int8ToString(Int8(num + 'a'))
+}
+
+fun mutateFreq(inout freq: Map::String, inout key: str, inout by: int) -> nthg {
+  if (freq.contains(key)) {
+    freq.insert(key, String(Int32(freq.get(key)) + by))
+  } else {
+    freq.insert(key, String(by))
+  }
+}
+
+
+fun isValidSubstring(inout s: str, inout substringLength: int) -> bool {
+  const charFrequency: Map::String = new Map::String()
+  const substringCount: Map::String = new Map::String()
+  for var i: int = 0 to n - 1 {
+    mutateFreq(charFrequency, Str::int8ToString(s[i]), 1)
+    if i >= substringLength {
+      mutateFreq(charFrequency, Str::int8ToString(s[i - substringLength]), -1)
+    }
+    if i >= substringLength - 1 {
+      for (var j = 0 to 25) {
+        var f: str = charFrequency.get(getAlpha(j))
+        var res = (f ? Int32(f) : 0)
+        if res == substringLength {
+          mutateFreq(substringCount, getAlpha(j), 1)
+        }
+      }
+    }
+  }
+  for var j: int = 0 to 25 {
+    var f: str = substringCount.get(getAlpha(j))
+    var res: int = (f ? Int32(f) : 0)
+    if (res >= 3) {
+      return true
+    }
+  }
+  return false
+}
+
+
+fun maximumLength(inout s: str) -> int {
+  n = Str::length(s) 
+  var low: int, high: int = 0,n
+  var found = false
+  while (low <= high) {
+    var mid: int = (low + high) // 2
+    if isValidSubstring(s, mid) {
+      low = mid + 1 
+      found = true 
+    } else {
+      high = mid - 1 
+    }
+  }
+  return ( (low - 1 > 0) ? (low - 1) : -1 )
+}
+
+print(maximumLength(input()))
+ 

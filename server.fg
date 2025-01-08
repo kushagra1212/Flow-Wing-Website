@@ -22,7 +22,7 @@ var errorObject: Vortex::HttpResponseType = {
 }
 var errorObjectPlain: Vortex::HttpResponseType = {
   content_type: "text/plain",
-  body: ANSI_RED + "Internal Server Error",
+  body: ANSI_RED + "Internal Server Error, Please try again just one more time",
   status: 500
 }
 
