@@ -1,5 +1,5 @@
 #!/bin/bash
-
+sudo ss -tulnp | grep :8080 | awk -F '[",=)]' '{print $5}' | tr -d '\n' | xargs sudo kill -9
 # Define paths and variables
 
 export FLOW_WING_COMPILER_PATH="FlowWing"
@@ -31,7 +31,7 @@ fi
 # Compile the Flow-Wing code
 echo "Compiling Flow-Wing code..."
 
-sudo FlowWing server.fg -L=/home/kushagrarathore002/Flow-Wing-Website -l=flowwing_vortex 
+FlowWing server.fg -L=/home/kushagrarathore002/Flow-Wing-Website -l=flowwing_vortex 
 
 # Check if the executable was created successfully
 if [ ! -f "$OUTPUT_EXECUTABLE" ]; then
