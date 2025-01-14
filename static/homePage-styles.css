@@ -145,7 +145,8 @@ video {
   width: 30%;
   left: 10%;
 }
-.repl-gif-container img {
+.repl-gif-container img,
+video {
   width: 100%;
   height: auto;
   border-radius: 12px; /* Slightly more rounded corners */
