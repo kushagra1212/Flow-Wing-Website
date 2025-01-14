@@ -18,6 +18,21 @@
   font-size: 1.5rem;
   margin-top: 10px;
 }
+@keyframes fadeOutBlur {
+  from {
+    filter: blur(10px) brightness(1.2);
+  }
+  to {
+    filter: brightness(1.2);
+  }
+}
+
+video {
+  filter: blur(10px) brightness(1.2); /* Initial blur */
+  animation-name: fadeOutBlur;
+  animation-duration: 0.5s; /* Adjust the duration as needed */
+  animation-fill-mode: forwards;
+}
 
 .get-started-link-button {
   display: inline-block;
